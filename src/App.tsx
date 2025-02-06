@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
 import { FileUp, Building2, ChevronDown, ChevronUp, List, ScrollText, MessageCircle, FileSearch, BookOpen } from 'lucide-react';
 import { Welcome } from './components/Welcome';
 import { Summary } from './components/Summary';
@@ -15,6 +16,66 @@ interface ChatMessage {
   sender: 'user' | 'bot';
 }
 
+function Layout() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuItems = [
+    { id: 'summary', label: 'Document Summary', icon: ScrollText, path: '/summary' },
+    { id: 'chat', label: 'Legal Assistant', icon: MessageCircle, path: '/chat' },
+    { id: 'extract', label: 'Extract Info', icon: FileSearch, path: '/extract' },
+    { id: 'manual', label: 'User Manual', icon: BookOpen, path: '/manual' },
+  ];
+
+  return (
+    <div className="flex h-screen bg-[#f8f5f2]">
+      {/* Sidebar */}
+      <div className="w-64 bg-[#8b4513] text-white shadow-lg">
+        <div className="p-4">
+          <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-6">
+            <Building2 className="w-5 h-5" />
+            Legal Buddy
+          </Link>
+
+          {/* Menu Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="w-full px-4 py-2 bg-[#2f5233] text-white rounded-lg hover:bg-[#1e351f] transition-colors flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <List className="w-4 h-4" />
+                Menu
+              </span>
+              {isMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {isMenuOpen && (
+              <div className="mt-2 space-y-1">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.path}
+                    className="block px-4 py-2 hover:bg-[#2f5233] transition-colors rounded flex items-center gap-2"
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 p-8">
+        <div className="max-w-4xl mx-auto">
+          <Outlet /> {/* This will render the matched route's component */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileId, setFileId] = useState<string | null>(null);
@@ -27,174 +88,65 @@ function App() {
   });
   const [currentMessage, setCurrentMessage] = useState('');
   const [companyName] = useState('ItechSpeed Inc.');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedPage, setSelectedPage] = useState<'welcome' | 'summary' | 'chat' | 'extract' | 'manual'>('welcome');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setIsUploading(true);
       try {
-        const uploadResponse = await uploadDocument(file);
+        const formData = new FormData();
+        formData.append('file', file);
+  
+        const response = await fetch('/upload', {
+          method: 'POST',
+          headers: {
+          },
+          body: formData,
+        });
+  
+        if (!response.ok) {
+          throw new Error('Error uploading file');
+        }
+  
+        const uploadResponse = await response.json();
         setSelectedFile(file);
         setFileId(uploadResponse.fileId);
-        addChatMessage(`File uploaded: ${file.name}`, 'bot');
-        
-        // Get summary and extracted info
+  
         const [summary, extract] = await Promise.all([
           getDocumentSummary(uploadResponse.fileId),
-          extractDocumentInfo(uploadResponse.fileId)
+          extractDocumentInfo(uploadResponse.fileId),
         ]);
-        
+  
         setSummaryData(summary);
         setExtractData(extract);
-        setSelectedPage('summary');
       } catch (error) {
-        addChatMessage('Error uploading file. Please try again.', 'bot');
+        console.error('Error uploading file:', error);
       } finally {
         setIsUploading(false);
       }
     }
   };
-
-  const addChatMessage = (text: string, sender: 'user' | 'bot') => {
-    const newMessage: ChatMessage = {
-      id: Date.now(),
-      text,
-      timestamp: new Date().toLocaleTimeString(),
-      sender
-    };
-    setChatHistory(prev => {
-      const updated = [...prev, newMessage];
-      localStorage.setItem('chatHistory', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentMessage.trim()) {
-      addChatMessage(currentMessage, 'user');
-      setTimeout(() => {
-        addChatMessage('Thank you for your message. I am processing your request.', 'bot');
-      }, 1000);
-      setCurrentMessage('');
-    }
-  };
-
-  const menuItems = [
-    { id: 'summary', label: 'Document Summary', icon: ScrollText },
-    { id: 'chat', label: 'Legal Assistant', icon: MessageCircle },
-    { id: 'extract', label: 'Extract Info', icon: FileSearch },
-    { id: 'manual', label: 'User Manual', icon: BookOpen },
-  ];
+  
 
   return (
-    <div className="flex h-screen bg-[#f8f5f2]">
-      <div className="w-64 bg-[#8b4513] text-white shadow-lg">
-        <div className="p-4">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            Legal Buddy
-          </h2>
-          
-          <div className="mb-6">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="w-full px-4 py-2 bg-[#2f5233] text-white rounded-lg hover:bg-[#1e351f] transition-colors flex items-center justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <List className="w-4 h-4" />
-                Menu
-              </span>
-              {isMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            
-            {isMenuOpen && (
-              <div className="mt-2 space-y-1">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedPage(item.id as any);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full px-4 py-2 text-left hover:bg-[#2f5233] transition-colors rounded flex items-center gap-2 ${
-                      selectedPage === item.id ? 'bg-[#2f5233]' : ''
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Upload Document</label>
-              <div className="relative">
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="file-upload"
-                  disabled={isUploading}
-                />
-                <label
-                  htmlFor="file-upload"
-                  className={`flex items-center gap-2 px-4 py-2 bg-[#2f5233] text-white rounded-lg cursor-pointer hover:bg-[#1e351f] transition-colors ${
-                    isUploading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <FileUp className="w-4 h-4" />
-                  {isUploading ? 'Uploading...' : selectedFile ? selectedFile.name : 'Choose file'}
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto">
-          {selectedPage === 'welcome' && (
-            <Welcome onFileUpload={handleFileUpload} isUploading={isUploading} />
-          )}
-          
-          {selectedPage === 'summary' && (
-            <Summary 
-              companyName={companyName} 
-              selectedFile={selectedFile}
-              summaryData={summaryData}
-              isLoading={!summaryData && !!selectedFile}
-            />
-          )}
-          
-          {selectedPage === 'chat' && (
-            <Chat
-              chatHistory={chatHistory}
-              currentMessage={currentMessage}
-              setCurrentMessage={setCurrentMessage}
-              handleSendMessage={handleSendMessage}
-            />
-          )}
-          
-          {selectedPage === 'extract' && (
-            <ExtractInfo 
-              selectedFile={selectedFile}
-              extractData={extractData}
-              isLoading={!extractData && !!selectedFile}
-            />
-          )}
-          
-          {selectedPage === 'manual' && (
-            <Manual />
-          )}
-        </div>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {/* Main Routes */}
+          <Route index element={<Welcome onFileUpload={handleFileUpload} isUploading={isUploading} />} />
+          <Route path="summary" element={<Summary companyName={companyName} selectedFile={selectedFile} summaryData={summaryData} isLoading={!summaryData && !!selectedFile} />} />
+          <Route path="chat" element={<Chat chatHistory={chatHistory} currentMessage={currentMessage} setCurrentMessage={setCurrentMessage} handleSendMessage={(e) => {
+            e.preventDefault();
+            if (currentMessage.trim()) {
+              setChatHistory([...chatHistory, { id: Date.now(), text: currentMessage, timestamp: new Date().toLocaleTimeString(), sender: 'user' }]);
+              setCurrentMessage('');
+            }
+          }} />} />
+          <Route path="extract" element={<ExtractInfo selectedFile={selectedFile} extractData={extractData} isLoading={!extractData && !!selectedFile} />} />
+          <Route path="manual" element={<Manual />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
