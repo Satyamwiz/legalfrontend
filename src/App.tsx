@@ -41,7 +41,7 @@ function Layout() {
         <div className="p-4">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-6">
             {/* photo1: Insert your logo image here */}
-            <img src="/logo.jpg" alt="itech speed logo" className="w-6 h-6" />
+            <img src="/itechseed.jpeg" alt="itech speed logo" className="w-6 h-6" />
             itech speed
           </Link>
 
@@ -83,7 +83,7 @@ function Layout() {
           <div></div>
           <div>
             {/* photo2: Insert your company logo here */}
-            <img src="/logo.png" alt="itech speed logo" className="w-10 h-10" />
+            <img src="./public/pict.jpg" alt="itech speed logo" className="w-10 h-10" />
           </div>
         </div>
         <div className="max-w-4xl mx-auto flex-1">
