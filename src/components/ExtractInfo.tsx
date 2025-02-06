@@ -1,104 +1,169 @@
-import React from 'react';
-import { FileSearch, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+// import React, { useEffect, useState } from "react";
+// import { Loader2 } from "lucide-react";
+// import ReactMarkdown from "react-markdown";
+
+// interface ExtractionData {
+//   answer: string;
+//   time_taken: string;
+// }
+
+// interface ExtractInfoProps {
+//   selectedFile: File | null;
+// }
+
+// export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
+//   const [extractionData, setExtractionData] = useState<ExtractionData | null>(null);
+//   const [loading, setLoading] = useState<boolean>(false);
+//   const [error, setError] = useState<string | null>(null);
+
+//   useEffect(() => {
+//     const fetchExtraction = async () => {
+//       setLoading(true);
+//       setError(null);
+//       try {
+//         console.log("Fetching extraction data...");
+//         const response = await fetch("http://127.0.0.1:5000/extract", {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify({
+//             input: "Extract all key legal information from the document",
+//           }),
+//         });
+
+//         if (!response.ok) {
+//           throw new Error("Failed to fetch extraction data");
+//         }
+//         const data: ExtractionData = await response.json();
+//         setExtractionData(data);
+//       } catch (err: any) {
+//         console.error("Error fetching extraction data:", err);
+//         setError(err.message || "An error occurred while fetching extraction data");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     // Since the file has already been uploaded, we always fetch extraction data.
+//     fetchExtraction();
+//   }, []);
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
+//       <div className="animate-fade-in animate-slide-up max-w-3xl w-full bg-white p-12 rounded-xl shadow-xl">
+//         <h2 className="text-3xl font-bold text-center text-[#8b4513] mb-8">
+//           Extracted Information
+//         </h2>
+//         {loading ? (
+//           <div className="flex flex-col items-center gap-2">
+//             <Loader2 className="animate-spin w-8 h-8 text-blue-600" />
+//             <p className="text-gray-700 text-lg">Extracting information...</p>
+//           </div>
+//         ) : error ? (
+//           <p className="text-red-500 text-lg text-center">{error}</p>
+//         ) : extractionData ? (
+//           <>
+//             {/* Scrollable container for the extracted answer */}
+//             <div className="max-h-96 overflow-y-auto text-gray-700 text-lg whitespace-pre-line">
+//               <ReactMarkdown>{extractionData.answer}</ReactMarkdown>
+//             </div>
+//             <p className="mt-6 text-gray-500 text-sm text-center">
+//               Processing Time: {extractionData.time_taken}
+//             </p>
+//           </>
+//         ) : (
+//           <p className="text-gray-600 text-lg text-center">
+//             No extraction data available.
+//           </p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ExtractInfo;
+import React, { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+
+interface ExtractionData {
+  answer: string;
+  time_taken: string;
+}
 
 interface ExtractInfoProps {
   selectedFile: File | null;
 }
 
 export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
+  const [extractionData, setExtractionData] = useState<ExtractionData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchExtraction = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        console.log("Fetching extraction data...");
+        const response = await fetch("http://127.0.0.1:5000/extract", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input: "Extract all key legal information from the document",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch extraction data");
+        }
+        const data: ExtractionData = await response.json();
+        setExtractionData(data);
+      } catch (err: any) {
+        console.error("Error fetching extraction data:", err);
+        setError(err.message || "An error occurred while fetching extraction data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExtraction();
+  }, []);
+
   return (
-    <div className="flex justify-center items-center bg-gray-100 p-8">
-      <div className="animate-fade-in animate-slide-up max-w-screen-lg w-full space-y-8 bg-white p-12 rounded-xl shadow-xl">
-        <div className="flex items-center gap-4 mb-8">
-          <FileSearch className="w-10 h-10 text-[#2f5233]" />
-          <h2 className="text-3xl font-bold text-[#8b4513]">Document Information Extraction</h2>
-        </div>
-
-        {selectedFile ? (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-12">
+      <div className="animate-fade-in animate-slide-up max-w-5xl w-full bg-white p-12 rounded-xl shadow-xl">
+        <h2 className="text-4xl font-bold text-center text-[#8b4513] mb-8">
+          Extracted Information
+        </h2>
+        {loading ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+            <p className="text-gray-700 text-lg">Extracting information...</p>
+          </div>
+        ) : error ? (
+          <p className="text-red-500 text-lg text-center">{error}</p>
+        ) : extractionData ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-              <div className="space-y-5">
-                <h3 className="text-xl font-medium text-[#2f5233]">Document Overview</h3>
-                <div className="bg-[#f8f5f2] p-6 rounded-lg">
-                  <p className="text-gray-700 text-lg">Filename: {selectedFile.name}</p>
-                  <p className="text-gray-600 text-md mt-2">
-                    Size: {(selectedFile.size / 1024).toFixed(2)} KB
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <h3 className="text-xl font-medium text-[#2f5233]">Extraction Status</h3>
-                <div className="bg-[#f8f5f2] p-6 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-500" />
-                    <p className="text-gray-700 text-lg">Document processed successfully</p>
-                  </div>
-                </div>
-              </div>
+            {/* Larger Scrollable Container */}
+            <div className="max-h-[500px] overflow-y-auto text-gray-800 text-lg leading-relaxed p-4 bg-gray-50 border border-gray-200 rounded-md shadow-inner">
+              <ReactMarkdown>{extractionData.answer}</ReactMarkdown>
             </div>
-
-            <div className="space-y-8">
-              <h3 className="text-xl font-medium text-[#2f5233]">Extracted Information</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="p-6 bg-[#f8f5f2] rounded-lg">
-                  <h4 className="font-semibold text-[#8b4513] mb-3">Parties Involved</h4>
-                  <ul className="space-y-2 text-gray-600 text-lg">
-                    <li>• Company A (Employer)</li>
-                    <li>• Company B (Contractor)</li>
-                  </ul>
-                </div>
-
-                <div className="p-6 bg-[#f8f5f2] rounded-lg">
-                  <h4 className="font-semibold text-[#8b4513] mb-3">Key Dates</h4>
-                  <ul className="space-y-2 text-gray-600 text-lg">
-                    <li>• Effective Date: 01/01/2024</li>
-                    <li>• Termination Date: 12/31/2024</li>
-                  </ul>
-                </div>
-
-                <div className="p-6 bg-[#f8f5f2] rounded-lg">
-                  <h4 className="font-semibold text-[#8b4513] mb-3">Contract Value</h4>
-                  <p className="text-gray-600 text-lg">$50,000 USD</p>
-                </div>
-
-                <div className="p-6 bg-[#f8f5f2] rounded-lg">
-                  <h4 className="font-semibold text-[#8b4513] mb-3">Governing Law</h4>
-                  <p className="text-gray-600 text-lg">State of California, United States</p>
-                </div>
-              </div>
-
-              <div className="mt-10">
-                <h3 className="text-xl font-medium text-[#2f5233] mb-5">Critical Clauses</h3>
-                <div className="space-y-6">
-                  <div className="p-6 bg-[#f8f5f2] rounded-lg border-l-4 border-yellow-500">
-                    <div className="flex items-center gap-3 mb-3">
-                      <AlertCircle className="w-6 h-6 text-yellow-500" />
-                      <h4 className="font-semibold text-[#8b4513]">Non-Compete Clause</h4>
-                    </div>
-                    <p className="text-gray-600 text-lg">2-year restriction period within 100-mile radius</p>
-                  </div>
-
-                  <div className="p-6 bg-[#f8f5f2] rounded-lg border-l-4 border-red-500">
-                    <div className="flex items-center gap-3 mb-3">
-                      <XCircle className="w-6 h-6 text-red-500" />
-                      <h4 className="font-semibold text-[#8b4513]">Termination Clause</h4>
-                    </div>
-                    <p className="text-gray-600 text-lg">30-day notice required for early termination</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="mt-6 text-gray-500 text-sm text-center">
+              Processing Time: {extractionData.time_taken}
+            </p>
           </>
         ) : (
-          <div className="text-center py-16">
-            <FileSearch className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-            <h3 className="text-2xl font-medium text-gray-600 mb-3">No Document Selected</h3>
-            <p className="text-gray-500 text-lg">Please upload a document to extract information</p>
-          </div>
+          <p className="text-gray-600 text-lg text-center">
+            No extraction data available.
+          </p>
         )}
       </div>
     </div>
   );
 };
+
+export default ExtractInfo;

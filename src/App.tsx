@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-router-dom';
-import { FileUp, Building2, ChevronDown, ChevronUp, List, ScrollText, MessageCircle, FileSearch, BookOpen } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, Outlet, Navigate } from 'react-router-dom';
+import { FileUp, Building2, ChevronDown, ChevronUp, List, ScrollText, MessageCircle, FileSearch } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
 import { Welcome } from './components/Welcome';
 import { Summary } from './components/Summary';
 import { Chat } from './components/Chat';
@@ -16,13 +17,21 @@ interface ChatMessage {
   sender: 'user' | 'bot';
 }
 
+function ProtectedRoute({ children, fileId }: { children: React.ReactElement; fileId: string | null }) {
+  // if (!fileId) {
+  //   // Instead of alert, show a toast notification.
+  //   toast.error("Please upload a document first.");
+  //   return <Navigate to="/" replace />;
+  // }
+  return children;
+}
+
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuItems = [
     { id: 'summary', label: 'Document Summary', icon: ScrollText, path: '/summary' },
     { id: 'chat', label: 'Legal Assistant', icon: MessageCircle, path: '/chat' },
     { id: 'extract', label: 'Extract Info', icon: FileSearch, path: '/extract' },
-    { id: 'manual', label: 'User Manual', icon: BookOpen, path: '/manual' },
   ];
 
   return (
@@ -31,8 +40,9 @@ function Layout() {
       <div className="w-64 bg-[#8b4513] text-white shadow-lg">
         <div className="p-4">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-6">
-            <Building2 className="w-5 h-5" />
-            Legal Buddy
+            {/* photo1: Insert your logo image here */}
+            <img src="/logo.jpg" alt="itech speed logo" className="w-6 h-6" />
+            itech speed
           </Link>
 
           {/* Menu Button */}
@@ -67,11 +77,20 @@ function Layout() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="flex-1 p-8 flex flex-col">
+        {/* Header with Right Corner Logo Option */}
+        <div className="flex justify-between items-center mb-6">
+          <div></div>
+          <div>
+            {/* photo2: Insert your company logo here */}
+            <img src="/logo.png" alt="itech speed logo" className="w-10 h-10" />
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto flex-1">
           <Outlet /> {/* This will render the matched route's component */}
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
@@ -87,7 +106,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [currentMessage, setCurrentMessage] = useState('');
-  const [companyName] = useState('ItechSpeed Inc.');
+  const [companyName] = useState('itech speed');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -99,8 +118,6 @@ function App() {
   
         const response = await fetch('/upload', {
           method: 'POST',
-          headers: {
-          },
           body: formData,
         });
   
@@ -121,28 +138,75 @@ function App() {
         setExtractData(extract);
       } catch (error) {
         console.error('Error uploading file:', error);
+        toast.error('Error uploading file.');
       } finally {
         setIsUploading(false);
       }
     }
   };
   
-
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
           {/* Main Routes */}
-          <Route index element={<Welcome onFileUpload={handleFileUpload} isUploading={isUploading} />} />
-          <Route path="summary" element={<Summary companyName={companyName} selectedFile={selectedFile} summaryData={summaryData} isLoading={!summaryData && !!selectedFile} />} />
-          <Route path="chat" element={<Chat chatHistory={chatHistory} currentMessage={currentMessage} setCurrentMessage={setCurrentMessage} handleSendMessage={(e) => {
-            e.preventDefault();
-            if (currentMessage.trim()) {
-              setChatHistory([...chatHistory, { id: Date.now(), text: currentMessage, timestamp: new Date().toLocaleTimeString(), sender: 'user' }]);
-              setCurrentMessage('');
+          <Route
+            index
+            element={<Welcome onFileUpload={handleFileUpload} isUploading={isUploading} />}
+          />
+          <Route
+            path="summary"
+            element={
+              <ProtectedRoute fileId={fileId}>
+                <Summary
+                  companyName={companyName}
+                  selectedFile={selectedFile}
+                  summaryData={summaryData}
+                  isLoading={!summaryData && !!selectedFile}
+                />
+              </ProtectedRoute>
             }
-          }} />} />
-          <Route path="extract" element={<ExtractInfo selectedFile={selectedFile} extractData={extractData} isLoading={!extractData && !!selectedFile} />} />
+          />
+          <Route
+            path="chat"
+            element={
+              <ProtectedRoute fileId={fileId}>
+                <Chat
+                  chatHistory={chatHistory}
+                  currentMessage={currentMessage}
+                  setCurrentMessage={setCurrentMessage}
+                  handleSendMessage={(e) => {
+                    e.preventDefault();
+                    if (currentMessage.trim()) {
+                      setChatHistory([
+                        ...chatHistory,
+                        {
+                          id: Date.now(),
+                          text: currentMessage,
+                          timestamp: new Date().toLocaleTimeString(),
+                          sender: 'user'
+                        }
+                      ]);
+                      setCurrentMessage('');
+                    }
+                  }}
+                  fileId={fileId}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="extract"
+            element={
+              <ProtectedRoute fileId={fileId}>
+                <ExtractInfo
+                  selectedFile={selectedFile}
+                  extractData={extractData}
+                  isLoading={!extractData && !!selectedFile}
+                />
+              </ProtectedRoute>
+            }
+          />
           <Route path="manual" element={<Manual />} />
         </Route>
       </Routes>
