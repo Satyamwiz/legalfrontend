@@ -97,7 +97,9 @@ interface ExtractInfoProps {
 }
 
 export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
-  const [extractionData, setExtractionData] = useState<ExtractionData | null>(null);
+  const [extractionData, setExtractionData] = useState<ExtractionData | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,14 +110,17 @@ export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
       try {
         console.log("Fetching extraction data...");
         const response = await fetch("http://127.0.0.1:5000/extract", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            input: "Extract all key legal information from the document",
-          }),
+          method: "GET",
         });
+        // const response = await fetch("http://127.0.0.1:5000/extract", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({
+        //     input: "Extract all key legal information from the document",
+        //   }),
+        // });
 
         if (!response.ok) {
           throw new Error("Failed to fetch extraction data");
@@ -124,7 +129,9 @@ export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
         setExtractionData(data);
       } catch (err: any) {
         console.error("Error fetching extraction data:", err);
-        setError(err.message || "An error occurred while fetching extraction data");
+        setError(
+          err.message || "An error occurred while fetching extraction data"
+        );
       } finally {
         setLoading(false);
       }
@@ -134,7 +141,7 @@ export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-12">
+    <div className=" w-[50vw] bg-gray-100 flex items-center justify-center p-12">
       <div className="animate-fade-in animate-slide-up max-w-5xl w-full bg-white p-12 rounded-xl shadow-xl">
         <h2 className="text-4xl font-bold text-center text-[#8b4513] mb-8">
           Extracted Information
@@ -149,7 +156,7 @@ export const ExtractInfo: React.FC<ExtractInfoProps> = ({ selectedFile }) => {
         ) : extractionData ? (
           <>
             {/* Larger Scrollable Container */}
-            <div className="max-h-[500px] overflow-y-auto text-gray-800 text-lg leading-relaxed p-4 bg-gray-50 border border-gray-200 rounded-md shadow-inner">
+            <div className="max-h-[500px]  overflow-y-auto text-gray-800 text-lg leading-relaxed p-4 bg-gray-50 border border-gray-200 rounded-md shadow-inner">
               <ReactMarkdown>{extractionData.answer}</ReactMarkdown>
             </div>
             <p className="mt-6 text-gray-500 text-sm text-center">

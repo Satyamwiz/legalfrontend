@@ -80,8 +80,8 @@ export const Chat: React.FC<ChatProps> = ({ fileId }) => {
   };
 
   return (
-    <div className="flex justify-center items-center bg-gray-100 p-6">
-      <div className="animate-fade-in animate-slide-up max-w-screen-lg w-full h-[calc(100vh-8rem)] bg-white rounded-xl shadow-xl flex flex-col">
+    <div className="flex  bg-gray-100 p-6  ">
+      <div className="animate-fade-in animate-slide-up w-screen max-w-screen-lg  h-[calc(100vh-10rem)] bg-white rounded-xl shadow-xl flex flex-col">
         <div className="bg-[#2f5233] text-white p-6 rounded-t-xl flex flex-col">
           <h2 className="text-2xl font-bold flex items-center gap-3">
             <Bot className="w-7 h-7" />

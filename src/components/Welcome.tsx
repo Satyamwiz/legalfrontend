@@ -41,7 +41,7 @@ export const Welcome: React.FC = () => {
       alert("File uploaded successfully!");
 
       // ✅ Navigate to the /summary page after a successful upload
-      navigate("/summary");
+      navigate("/chat");
 
     } catch (error) {
       console.error("Upload Error:", error);

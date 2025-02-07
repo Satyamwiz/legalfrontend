@@ -37,14 +37,13 @@ function Layout() {
   return (
     <div className="flex h-screen bg-[#f8f5f2]">
       {/* Sidebar */}
-      <div className="w-64 bg-[#8b4513] text-white shadow-lg">
+      <div className=" w-[20%] bg-[#8b4513] text-white shadow-lg">
         <div className="p-4">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold mb-6">
+          <Link to="/" className="flex items-center gap-2 text-3xl font-bold mb-6">
             {/* photo1: Insert your logo image here */}
-            <img src="/itechseed.jpeg" alt="itech speed logo" className="w-6 h-6" />
-            itech speed
+            <img src="/itechseed.jpeg" alt="itech speed logo" className=" rounded-lg w-16 h-16 " />
+            iTech Seed
           </Link>
-
           {/* Menu Button */}
           <div className="mb-6">
             <button
@@ -83,7 +82,7 @@ function Layout() {
           <div></div>
           <div>
             {/* photo2: Insert your company logo here */}
-            <img src="./public/pict.jpg" alt="itech speed logo" className="w-10 h-10" />
+            <img src="./pict.jpg" alt="itech speed logo" className="rounded-lg w-16 h-16" />
           </div>
         </div>
         <div className="max-w-4xl mx-auto flex-1">
